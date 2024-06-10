@@ -10,6 +10,9 @@ def Times(steps: int) -> np.array:
     for i in range(steps+1):
         times[i] = i * timestep
     return times
+def Force(m1: float, m2: float, rj: np.array, ri: np.array) -> np.array:
+    assert len(rj) == len(ri) == 2
+    return -cc.G * m1 * m2 * (rj-ri) / (((rj[0]-ri[0])**2 + (rj[1]-ri[1])**2)**(3/2))
 
 def Positions(Perihelion: float, PlanetMass: float, SunMass: float, Velocity: float, steps: int) -> np.array:
     positions = np.zeros((steps+1, 2))
@@ -42,9 +45,7 @@ def Differences(positions_1: np.array, positions_2: np.array) -> np.array:
     assert positions_1.shape == positions_2.shape
     return positions_1 - positions_2
 
-def Force(m1: float, m2: float, rj: np.array, ri: np.array) -> np.array:
-    assert len(rj) == len(ri) == 2
-    return -cc.G * m1 * m2 * (rj-ri) / (((rj[0]-ri[0])**2 + (rj[1]-ri[1])**2)**(3/2))
+
 
 
 def simulate_orbits(positionsE: np.array, positionsM: np.array, positionsJ: np.array, simulate = True) -> None:
@@ -58,7 +59,7 @@ def simulate_orbits(positionsE: np.array, positionsM: np.array, positionsJ: np.a
     h2, = plt.plot([], [], 'ro', markersize=8, markerfacecolor='red', markeredgecolor='black', label='Mars')
     h3, = plt.plot([], [], 'go', markersize=12, markerfacecolor='green', markeredgecolor='black', label='Jupiter')
     
-    plt.axis([-8.5e11, 8.5e11, -8.5e11, 8.5e11])
+    plt.axis((-8.5e11, 8.5e11, -8.5e11, 8.5e11))
     plt.grid(True)
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
