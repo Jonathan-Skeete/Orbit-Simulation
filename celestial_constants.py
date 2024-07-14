@@ -25,6 +25,8 @@ JupiterO = 3.7434e8 # seconds
 # Gravitational Constant: https://nssdc.gsfc.nasa.gov/planetary/factsheet/fact_notes.html
 G = 6.6743e-11 # m^3 kg^-1 s^-2
 
+timestep = 1e5 # delta t
+
 
 if __name__ == '__main__':
     ...

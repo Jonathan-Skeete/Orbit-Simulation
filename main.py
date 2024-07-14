@@ -2,22 +2,21 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import celestial_constants as cc
+from celestial_constants import timestep
 
-timestep = 1e5 # delta t
-
-def Times(steps: int) -> np.array:
+def Times(steps: int) -> np.ndarray:
     times = np.zeros((steps+1,1))
     for i in range(steps+1):
         times[i] = i * timestep
     return times
-def Force(m1: float, m2: float, rj: np.array, ri: np.array) -> np.array:
+def Force(m1: float, m2: float, rj: np.ndarray, ri: np.ndarray) -> np.ndarray:
     assert len(rj) == len(ri) == 2
     return -cc.G * m1 * m2 * (rj-ri) / (((rj[0]-ri[0])**2 + (rj[1]-ri[1])**2)**(3/2))
 
 def Positions(Perihelion: float, PlanetMass: float, SunMass: float, Velocity: float, steps: int) -> np.array:
     positions = np.zeros((steps+1, 2))
     positions[0] = np.array([Perihelion, 0])
-    positions[1] = np.array([Perihelion - ((1/2) * ((cc.G * SunMass) / (Perihelion**2))), Velocity * timestep])
+    positions[1] = np.array([Perihelion - ((1/2) * ((cc.G * SunMass) / (Perihelion**2)) * (timestep**2)), Velocity * timestep])
     
     # Second order difference equation
     for l in range(1, steps):
@@ -28,7 +27,7 @@ def Positions(Perihelion: float, PlanetMass: float, SunMass: float, Velocity: fl
 def Velocity_0(ra: float,rp: float, period: float) -> float:
     return (math.pi * (ra+rp) * math.sqrt(ra*rp))/(rp*period)
 
-def Accelerations(Mj: float, Mi: float, positions_1: np.array, positions_2: np.array = None) -> np.array:
+def Accelerations(Mj: float, Mi: float, positions_1: np.ndarray, positions_2: np.ndarray = None) -> np.array:
     if positions_2 is None:
         positions_2 = np.zeros((len(positions_1), 2))
         
@@ -41,21 +40,18 @@ def Accelerations(Mj: float, Mi: float, positions_1: np.array, positions_2: np.a
         
     return accelerations
 
-def Differences(positions_1: np.array, positions_2: np.array) -> np.array:
+def Differences(positions_1: np.ndarray, positions_2: np.ndarray) -> np.ndarray:
     assert positions_1.shape == positions_2.shape
     return positions_1 - positions_2
 
-
-
-
-def simulate_orbits(positionsE: np.array, positionsM: np.array, positionsJ: np.array, simulate = True) -> None:
-    plt.figure(figsize=(10, 10))
+def simulate_orbits(positionsE: np.ndarray, positionsM: np.ndarray, positionsJ: np.ndarray, simulate = True) -> None:
+    plt.figure(figsize=(6.5, 6.5))
     plt.plot(positionsE[:, 0], positionsE[:, 1], 'b-', label='Earth Orbit')
     plt.plot(positionsM[:, 0], positionsM[:, 1], 'r-', label='Mars Orbit')
     plt.plot(positionsJ[:, 0], positionsJ[:, 1], 'g-', label='Jupiter Orbit')
     plt.plot(0, 0, 'ro', markersize=18, markerfacecolor='yellow', markeredgecolor='black', label='Sun')  # Marker for the Sun
     
-    h1, = plt.plot([], [], 'bo', markersize=8, markerfacecolor='blue', markeredgecolor='black', label='Earth')
+    h1, = plt.plot([], [], 'bo', markersize=8, markerfacecolor='blue', markeredgecolor='black', label='Earth') # this is for
     h2, = plt.plot([], [], 'ro', markersize=8, markerfacecolor='red', markeredgecolor='black', label='Mars')
     h3, = plt.plot([], [], 'go', markersize=12, markerfacecolor='green', markeredgecolor='black', label='Jupiter')
     
@@ -92,7 +88,7 @@ def main() -> None:
     VMars = Velocity_0(cc.MarsA, cc.MarsP, cc.MarsO)
     VJupiter = Velocity_0(cc.JupiterA, cc.JupiterP, cc.JupiterO)
     
-    Etimes = Times(Esteps)
+    Etimes = Times(Esteps) 
     Mtimes = Times(Msteps)
     Jtimes = Times(Jsteps)
     
@@ -102,7 +98,7 @@ def main() -> None:
     
     positions3yearsE = Positions(cc.EarthP, cc.EarthMass, cc.SunMass, VEarth, Esteps*3)
     positions3yearsM = Positions(cc.MarsP, cc.MarsMass, cc.SunMass, VMars, Esteps*3)
-    positions3yearsJ = Positions(cc.JupiterP, cc.JupiterMass, cc.SunMass, VJupiter, Esteps*3)
+    positionns3yearsJ = Positions(cc.JupiterP, cc.JupiterMass, cc.SunMass, VJupiter, Esteps*3)
     
     positions36yearsE = Positions(cc.EarthP, cc.EarthMass, cc.SunMass, VEarth, Esteps*36)
     positions36yearsM = Positions(cc.MarsP, cc.MarsMass, cc.SunMass, VMars, Esteps*36)
@@ -111,11 +107,11 @@ def main() -> None:
     accelerationsE = Accelerations(cc.EarthMass, cc.SunMass, positionsE)
     accelerationsM = Accelerations(cc.MarsMass, cc.SunMass, positionsM)
     accelerationsJ = Accelerations(cc.JupiterMass, cc.SunMass, positionsJ)
-    accelerationsEJ = accelerationsE + Accelerations(cc.EarthMass, cc.JupiterMass, positionsE, positionsJ[0:Esteps+1])
-    accelerationsMJ = accelerationsM + Accelerations(cc.MarsMass, cc.JupiterMass, positionsM, positionsJ[0:Msteps+1])
+    accelerationsEJ = accelerationsE + Accelerations(cc.EarthMass, cc.JupiterMass, positionsE, positionsJ[:Esteps+1])
+    accelerationsMJ = accelerationsM + Accelerations(cc.MarsMass, cc.JupiterMass, positionsM, positionsJ[:Msteps+1])
     
-    differencesEJ = Differences(positionsE, positionsJ[0:Esteps+1])
-    differencesMJ = Differences(positionsM, positionsJ[0:Msteps+1])
+    differencesEJ = Differences(positionsE, positionsJ[:Esteps+1])
+    differencesMJ = Differences(positionsM, positionsJ[:Msteps+1])
     
     # simulate_orbits(positions3yearsE, positions3yearsM, positions3yearsJ, simulate = False)
     # simulate_orbits(positions36yearsE, positions36yearsM, positions36yearsJ, simulate = False)    
@@ -123,8 +119,6 @@ def main() -> None:
     # Simulation of the orbits
     # simulate_orbits(positions3yearsE, positions3yearsM, positions3yearsJ)
     simulate_orbits(positions36yearsE, positions36yearsM, positions36yearsJ)
-    
-    
     
 
 if __name__ == '__main__':
